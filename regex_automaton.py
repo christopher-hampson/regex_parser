@@ -1,5 +1,3 @@
-
-
 class Automaton:
 	def __init__(self,states,start,final,trans):
 		(self.states, self.start, self.final, self.trans) = (states, start, final, trans)
