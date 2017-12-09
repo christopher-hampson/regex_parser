@@ -1,2 +1,2 @@
 # regex_parser
-Just for fun!
+Just for fun! Not tested!
