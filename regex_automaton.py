@@ -7,25 +7,18 @@ class Automaton:
 		if list(E) == list(set_of_states):	return list(E)
 		return self.epsilon_closure(E)
 
-	def __repr__(self):
-		s = "States: " + str(self.states)[1:-1] + "\n"
-		s += "Initial: " + str([self.start])[1:-1] + "\n"
-		s += "Final: " +str(self.final)[1:-1] + "\n"
-		s += "Transitions: " +str(self.trans)[1:-1]
-		return s
+	def accept(self,w):
+		for state in self.epsilon_closure([self.start]):
+			if self.run(w,state=state): return True
+		return False
 
-	def run(self,w,state=None):
-		if not state: 
-			state = self.start
+	def run(self,w,state):
+		if len(w)==0: return state in self.final
 
-		if len(w)==0:
-			return [f for f in self.final if f in self.epsilon_closure([state])] != []
+		T = [next_state for (current_state,read,next_state) in self.trans if read==w[0] and current_state == state]
 
-		T = [(w[1:],next_state) for (current_state,read,next_state) in self.trans if read==w[0] and current_state == state]
-		T_ep = [(w,next_state) for  (current_state,read,next_state) in self.trans if read=='' and current_state == state]
-
-		for (next_w,next_state) in T+T_ep:
-			if self.run(next_w,state=next_state): return True
+		for next_state in self.epsilon_closure(T):
+			if self.run(w[1:],next_state): return True
 		return False
 
 def join_or(A,B):
@@ -60,8 +53,7 @@ class Parser:
 
 	def parse(self):
 		p = self.pos
-		try:
-			return self.parse_union()
+		try: return self.parse_union()
 		except: self.pos = p
 		
 		return self.parse_simple()
@@ -87,12 +79,10 @@ class Parser:
 		
 	def parse_basic(self):
 		p = self.pos
-		try:
-			return self.parse_star()
+		try: return self.parse_star()
 		except: self.pos = p
 		
-		try:
-			return self.parse_plus()
+		try: return self.parse_plus()
 		except: self.pos = p
 		
 		return self.parse_elementary()
@@ -110,8 +100,7 @@ class Parser:
 
 	def parse_elementary(self):
 		p = self.pos
-		try:
-			return self.parse_group()
+		try: return self.parse_group()
 		except: self.pos = p
 		
 		return self.parse_char()
@@ -135,5 +124,4 @@ class Parser:
 pattern = "(a|b)+c"
 string = "aabababbac"
 
-print "Checking '{0}' for pattern '{1}' : {2}".format(string, pattern, Parser(pattern).parse().run(string))
-
+print "Checking '{0}' for pattern '{1}' : {2}".format(string, pattern, Parser(pattern).parse().accept(string))
